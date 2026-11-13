@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Proposal · Temporally Adaptive Sorting for Gaussian Splatting</title>
+  <meta name="description" content="Project proposal: adaptive per-tile sorting for StopThePop using information from nearby camera frames.">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="splats" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="wrap">
+      <p class="kicker">CS 184/284A · Fall 2026 · Final project</p>
+      <h1 class="site-title">Temporally Adaptive Sorting for Gaussian Splatting</h1>
+      <p class="page-title">Project proposal</p>
+      <nav class="site-nav" aria-label="Project pages">
+        <a href="../">Home</a>
+        <a href="./" aria-current="page">Proposal</a>
+        <a href="../milestone/">Milestone</a>
+        <a href="../final/">Final report</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <section aria-labelledby="summary-h">
+        <h2 id="summary-h">Summary</h2>
+        <p>In our project, we aim to speed up 3D Gaussian Splatting for smoothly moving cameras without introducing visible popping artifacts. Building on the work StopThePop, we propose to use information from nearby camera frames to adaptively determine which image regions require accurate hierarchical sorting and which can use a cheaper sorting method.</p>
+      </section>
+
+      <section aria-labelledby="team-h">
+        <h2 id="team-h">Team members</h2>
+        <ul class="team">
+          <li><span class="name">Noah Stiegler</span><span class="role">SID 3040849464</span></li>
+          <li><span class="name">Raymond Tsao</span><span class="role">SID 3037860126</span></li>
+          <li><span class="name">Ria Jain</span><span class="role">SID 3037843187</span></li>
+          <li><span class="name">Nikko Adrian Pacleb</span><span class="role">SID 3041442108</span></li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="problem-h">
+        <h2 id="problem-h">Problem description</h2>
+        <p>In augmented and virtual reality, virtual tours, and robotic teleoperation, users often need to smoothly navigate through reconstructed 3D scenes, which requires rendering a sequence of images from continuously changing camera viewpoints. 3D Gaussian Splatting (3DGS) enables real-time novel-view rendering, but requires sorting Gaussians by depth at each frame. Repeating this sorting process can introduce redundant computation, especially when the camera moves only slightly. Moreover, standard 3DGS approximates Gaussian depth using the center of each Gaussian. This can lead to incorrect blending orders that change abruptly as the camera moves, producing visible popping artifacts and reducing temporal consistency.</p>
+        <p>Recent work has addressed these two challenges separately. Neo, for instance, reuses previously sorted Gaussian lists across consecutive frames to reduce computation. However, it retains the approximate depth ordering of standard 3DGS and therefore is still prone to popping artifacts. StopThePop, on the other hand, introduces a more accurate hierarchical per-pixel sorting scheme to reduce popping artifacts, but processes each frame independently.</p>
+        <p>Motivated by these works, our goal is to investigate whether we can combine the advantages of both approaches. Intuitively, if we run StopThePop's accurate hierarchical sorting at frame <em>t</em>, and the camera moves only slightly in the next frame, we expect the sorting requirements to remain similar. We can therefore use information from the previous frame to adaptively determine which image regions require accurate hierarchical sorting and which can use a cheaper sorting method.</p>
+      </section>
+
+      <section aria-labelledby="goals-h">
+        <h2 id="goals-h">Goals and deliverables</h2>
+        <p>Our approach is to avoid performing StopThePop's hierarchical sorting independently for every frame. Below is an overview of our proposed method.</p>
+        <ul>
+          <li><strong>Frame <em>t</em>:</strong> Run StopThePop's hierarchical sorting algorithm. For each image patch, we estimate its sorting difficulty by comparing the initial approximate Gaussian ordering with the final per-pixel ordering, using a metric such as inversion rate.</li>
+          <li><strong>Frame <em>t</em>+1:</strong> We reuse the previous frame's patch-level difficulty scores to predict which regions require accurate sorting. In particular, for patches with low sorting difficulty, we use the simpler Gaussian center-depth sorting from standard 3DGS, while for patches with high sorting difficulty, we apply StopThePop's full hierarchical sorting.</li>
+          <li><strong>Periodic updates:</strong> We periodically run full hierarchical sorting to refresh the difficulty scores, especially after significant camera movements.</li>
+        </ul>
+
+        <h3>What we plan to deliver</h3>
+        <ul>
+          <li>A working prototype with per-tile selection between cheap sorting and StopThePop's hierarchy, tested on pretrained scenes and smooth camera paths.</li>
+          <li>Side-by-side camera fly-throughs and heatmaps showing where accurate sorting is selected.</li>
+          <li>We will compare the rendering time and image quality of our method against standard 3DGS and StopThePop. We will also measure the rendering time of both the cheap and accurate sorting paths to determine whether adaptive sorting provides meaningful speedups.</li>
+        </ul>
+
+        <h3>What we hope to deliver</h3>
+        <ul>
+          <li>A polished interactive viewer with a quality threshold slider and live performance statistics.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="schedule-h">
+        <h2 id="schedule-h">Schedule</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th scope="col">Week</th><th scope="col">Tasks</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Week 1</td><td>Set up StopThePop and pretrained scenes; render camera paths; measure which tiles benefit from accurate sorting and test a cheap rendering path.</td></tr>
+              <tr><td>Week 2</td><td>Implement cheap/full sorting for individual tiles and an initial difficulty-based selection rule.</td></tr>
+              <tr><td>Week 3</td><td>Reuse difficulty scores across nearby camera frames; handle camera movement and refreshes.</td></tr>
+              <tr><td>Week 4</td><td>Evaluate speed and popping, create the visual demo, and complete the report and presentation.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="resources-h">
+        <h2 id="resources-h">Resources</h2>
+        <p>We have access to an NVIDIA CUDA-capable GPU, and the implementations of both StopThePop and Neo are publicly available. We plan to build on these existing codebases for implementation and evaluation.</p>
+        <h3>References</h3>
+        <ul>
+          <li>Neo: <a href="https://arxiv.org/pdf/2511.12930">https://arxiv.org/pdf/2511.12930</a></li>
+          <li>StopThePop: <a href="https://arxiv.org/pdf/2402.00525">https://arxiv.org/pdf/2402.00525</a></li>
+          <li>Lumina: <a href="https://arxiv.org/abs/2506.05682">https://arxiv.org/abs/2506.05682</a></li>
+          <li>Hybrid Transparency: <a href="https://arxiv.org/abs/2410.08129">https://arxiv.org/abs/2410.08129</a></li>
+          <li>AAA-Gaussians: <a href="https://arxiv.org/abs/2504.12811">https://arxiv.org/abs/2504.12811</a></li>
+          <li>HiGS: <a href="https://arxiv.org/abs/2606.00352">https://arxiv.org/abs/2606.00352</a></li>
+          <li>3D Gaussian Splatting (3DGS): <a href="https://arxiv.org/abs/2308.04079">https://arxiv.org/abs/2308.04079</a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>CS 184/284A: Computer Graphics and Imaging, UC Berkeley, Fall 2026.</p>
+      <p><a href="https://cs184.eecs.berkeley.edu/fa26/project/">Course final project page</a></p>
+    </div>
+  </footer>
+</body>
+</html>

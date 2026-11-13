@@ -1,0 +1,346 @@
+/*
+  CS 184/284A final project site.
+  Reads like a paper: serif body text, sans-serif for headings and navigation.
+  Follows the system light/dark setting on screen, and always prints in light
+  colors, since the course collects PDFs made with Safari's Print > Save as PDF.
+  The header's soft ellipses are a nod to Gaussian splats.
+*/
+
+:root {
+  color-scheme: light;
+  --bg: #fbfcfd;
+  --surface: #ffffff;
+  --fg: #171a1f;
+  --muted: #5b6271;
+  --line: #e1e5eb;
+  --accent: #2d58cf;
+  --accent-soft: #e9eefc;
+  --todo-bg: #fff4d1;
+  --todo-fg: #5c4200;
+  --todo-line: #e3bf55;
+  --splat-a: 235 104 52;
+  --splat-b: 27 160 122;
+  --splat-c: 98 80 214;
+  --splat-alpha: 0.30;
+
+  --font-text: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #101216;
+    --surface: #171a20;
+    --fg: #e6e8ec;
+    --muted: #a3aab6;
+    --line: #2a2f38;
+    --accent: #85a2ff;
+    --accent-soft: #1b2340;
+    --todo-bg: #352b0e;
+    --todo-fg: #f2d47e;
+    --todo-line: #7a6320;
+    --splat-alpha: 0.22;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  font-size: 1.0625rem;
+  line-height: 1.62;
+}
+
+.wrap {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  z-index: 10;
+}
+.skip:focus { top: 12px; }
+
+/* ---------- header ---------- */
+
+.site-header {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  padding-block: 44px 0;
+}
+.splats { position: absolute; inset: 0; pointer-events: none; }
+.splats span { position: absolute; border-radius: 50%; }
+.splats span:nth-child(1) {
+  width: 360px; height: 150px; right: -70px; top: -30px; transform: rotate(-16deg);
+  background: radial-gradient(closest-side, rgb(var(--splat-a) / var(--splat-alpha)), transparent);
+}
+.splats span:nth-child(2) {
+  width: 220px; height: 120px; right: 120px; top: 60px; transform: rotate(24deg);
+  background: radial-gradient(closest-side, rgb(var(--splat-b) / var(--splat-alpha)), transparent);
+}
+.splats span:nth-child(3) {
+  width: 300px; height: 110px; right: -20px; top: 120px; transform: rotate(8deg);
+  background: radial-gradient(closest-side, rgb(var(--splat-c) / var(--splat-alpha)), transparent);
+}
+.splats span:nth-child(4) {
+  width: 140px; height: 70px; right: 260px; top: 10px; transform: rotate(-38deg);
+  background: radial-gradient(closest-side, rgb(var(--splat-c) / var(--splat-alpha)), transparent);
+}
+.site-header .wrap { position: relative; }
+
+.kicker {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-ui);
+  line-height: 1.2;
+  text-wrap: balance;
+  color: var(--fg);
+}
+
+.site-title {
+  font-size: clamp(1.9rem, 4.6vw, 2.75rem);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.page-title {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  margin-top: 28px;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+}
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 10px 0 12px;
+  border-bottom: 2px solid transparent;
+}
+.site-nav a:hover { color: var(--fg); }
+.site-nav a[aria-current="page"] {
+  color: var(--fg);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+/* ---------- content ---------- */
+
+main { padding-block: 36px 64px; }
+
+main h2 {
+  font-size: 1.45rem;
+  margin: 2.2em 0 0.55em;
+}
+main > .wrap > h2:first-child,
+main > .wrap > section:first-child > h2:first-child { margin-top: 0; }
+main h3 { font-size: 1.12rem; margin: 1.6em 0 0.45em; }
+main h4 { font-size: 1rem; margin: 1.3em 0 0.4em; }
+
+p, ul, ol, table, figure, dl { margin: 0 0 1em; }
+ul, ol { padding-left: 1.3em; }
+li + li { margin-top: 0.35em; }
+
+a { color: var(--accent); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--accent-soft);
+  padding: 0.08em 0.35em;
+  border-radius: 4px;
+}
+
+.lede { font-size: 1.15rem; }
+
+/* team list */
+.team {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 10px 24px;
+}
+.team li { margin: 0; }
+.team .name { display: block; font-family: var(--font-ui); font-weight: 600; }
+.team .role { display: block; font-family: var(--font-ui); font-size: 0.86rem; color: var(--muted); }
+
+/* deliverable links (paper, video, slides) */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+.links li { margin: 0; }
+.links a {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  padding: 7px 14px;
+  border-radius: 999px;
+}
+.links a:hover { border-color: var(--accent); }
+
+/* deadline list on the home page */
+.deadlines {
+  list-style: none;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.deadlines li {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 4px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.deadlines .date {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+.deadlines .what a, .deadlines .what strong { font-family: var(--font-ui); font-weight: 600; }
+.deadlines .what span { display: block; color: var(--muted); font-size: 0.95rem; }
+@media (max-width: 480px) {
+  .deadlines li { grid-template-columns: 1fr; }
+}
+
+/* tables */
+.table-scroll { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; font-size: 0.98rem; }
+.table-scroll table { margin: 0; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+td:first-child { font-family: var(--font-ui); font-weight: 600; white-space: nowrap; }
+
+/* figures */
+figure { margin-inline: 0; }
+figure img, figure video { display: block; width: 100%; height: auto; border-radius: 6px; }
+figcaption { font-family: var(--font-ui); font-size: 0.88rem; color: var(--muted); margin-top: 8px; }
+.placeholder {
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 16px;
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  color: var(--muted);
+  background: var(--surface);
+}
+.video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+}
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
+
+/* to-do notes: search the repo for class="todo" before submitting */
+.todo {
+  background: var(--todo-bg);
+  color: var(--todo-fg);
+  border-left: 3px solid var(--todo-line);
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+}
+span.todo { padding: 1px 6px; border-left: 0; border-radius: 3px; }
+
+/* ---------- footer ---------- */
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding-block: 20px 36px;
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+.site-footer p { margin: 0 0 4px; }
+
+/* ---------- print (Safari: File > Print > Save as PDF) ---------- */
+
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --fg: #000000;
+    --muted: #444a55;
+    --line: #c9ced6;
+    --accent: #1b43b5;
+    --accent-soft: #eef2fd;
+    --todo-bg: #fff4d1;
+    --todo-fg: #5c4200;
+    --todo-line: #e3bf55;
+  }
+  @page { margin: 16mm 15mm; }
+  body { font-size: 11pt; line-height: 1.5; }
+  .skip, .site-nav, .splats { display: none !important; }
+  .site-header { padding-block: 0 12px; }
+  main { padding-block: 16px 0; }
+  .wrap { max-width: none; padding: 0; }
+  h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+  table, figure, .team, .links, .deadlines li { break-inside: avoid; page-break-inside: avoid; }
+  .links a { border: 1px solid var(--line); }
+  .site-footer { padding-block: 12px 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-nav a, .links a { transition: color 120ms ease, border-color 120ms ease; }
+}
